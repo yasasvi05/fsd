@@ -295,27 +295,27 @@ public class BlowfishDemo {
 ===============================
 5.Write a program to implement the RSA algorithm.
 
-import java.math.BigInteger;
+import javax.crypto.*;
+import java.security.*;
+import java.util.Scanner;
 
 public class RSADemo {
-    public static void main(String[] args) {
-        BigInteger p = BigInteger.valueOf(61);
-        BigInteger q = BigInteger.valueOf(53);
+    public static void main(String[] args) throws Exception {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter text: ");
+        String msg = sc.nextLine();
 
-        BigInteger n = p.multiply(q);
-        BigInteger phi = p.subtract(BigInteger.ONE)
-                          .multiply(q.subtract(BigInteger.ONE));
+        KeyPairGenerator k = KeyPairGenerator.getInstance("RSA");
+        KeyPair kp = k.generateKeyPair();
 
-        BigInteger e = BigInteger.valueOf(17);
-        BigInteger d = e.modInverse(phi);
+        Cipher c = Cipher.getInstance("RSA");
+        c.init(Cipher.ENCRYPT_MODE, kp.getPublic());
+        byte[] e = c.doFinal(msg.getBytes());
+        System.out.println("Encrypted: " + new String(e));
 
-        BigInteger msg = BigInteger.valueOf(65);
-
-        BigInteger enc = msg.modPow(e, n);
-        BigInteger dec = enc.modPow(d, n);
-
-        System.out.println("Encrypted: " + enc);
-        System.out.println("Decrypted: " + dec);
+        c.init(Cipher.DECRYPT_MODE, kp.getPrivate());
+        byte[] d = c.doFinal(e);
+        System.out.println("Decrypted: " + new String(d));
     }
 }
 
