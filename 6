@@ -103,4 +103,8 @@ int yywrap()
 {
     return 1;
 }
-
+for yacc
+yacc -d file_name.y
+lex file_name.l
+gcc y.tab.c lex.yy.c -o file_name
+./file_name 
