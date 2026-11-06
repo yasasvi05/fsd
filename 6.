@@ -2,86 +2,105 @@
 
 ast.y
 
+
 %{
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
-typedef struct node {
-    char v[20];
-    struct node *l, *r;
-} Node;
+struct node {
+    char ch;
+    struct node *left, *right;
+};
 
-Node *root;
-
-Node *create(char *v, Node *l, Node *r) {
-    Node *n = malloc(sizeof(Node));
-    strcpy(n->v, v);
-    n->l = l; n->r = r;
+struct node* create(char ch, struct node *l, struct node *r)
+{
+    struct node *n = malloc(sizeof(struct node));
+    n->ch = ch;
+    n->left = l;
+    n->right = r;
     return n;
 }
 
-int yylex(void);
-void yyerror(const char *s);
+void print(struct node *n, int d)
+{
+    if(n == NULL) return;
 
-void draw(Node *n, int d) {
-    if (!n) return;
-    for (int i = 0; i < d; i++) printf("  ");
-    printf("%s\n", n->v);
-    if (n->l || n->r) printf("  / \\\n");
-    draw(n->l, d+1);
-    draw(n->r, d+1);
+    for(int i=0; i<d; i++)
+        printf("  ");
+
+    printf("%c\n", n->ch);
+
+    print(n->left, d+1);
+    print(n->right, d+1);
 }
+
+struct node *root;
+
+int yylex();
+void yyerror(char *s);
 %}
 
-%union { Node *n; char *s; }
-%token <s> ID
+%union {
+    struct node *n;
+}
+
+%token ID
 %type <n> E T F
 
 %%
-E : ID '=' E { $$ = root = create("=", create($1,0,0),$3); }
-  | E '+' T  { $$ = root = create("+",$1,$3); }
-  | T        { $$ = root = $1; }
+
+E : E '+' T { $$ = create('+', $1, $3); root = $$; }
+  | T       { $$ = $1; }
   ;
-T : T '' F  { $$ = create("",$1,$3); }
-  | F        { $$ = $1; }
+
+T : T '*' F { $$ = create('*', $1, $3); }
+  | F       { $$ = $1; }
   ;
+
 F : '(' E ')' { $$ = $2; }
-  | ID        { $$ = create($1,0,0); }
+  | ID        { $$ = create('i', NULL, NULL); }
   ;
+
 %%
 
-void yyerror(const char *s) { printf("Invalid expression\n"); }
+void yyerror(char *s)
+{
+    printf("Invalid expression\n");
+}
 
-int main() {
+int main()
+{
     printf("Enter expression: ");
     yyparse();
-    draw(root,0);
+
+    printf("\nAbstract Syntax Tree:\n");
+    print(root, 0);
+
     return 0;
 }
 
 
 ast.l
 
+
 %{
-#include "ast.tab.h"
-#include <string.h>
+#include "y.tab.h"
 %}
 
 %%
-[ \t\n]+ ;
-[a-zA-Z_][a-zA-Z0-9_]* {
-    yylval.s = strdup(yytext);
-    return ID;
-}
-"="  return '=';
-"+"  return '+';
-""  return '';
-"("  return '(';
-")"  return ')';
-.    printf("Invalid character\n");
+
+[a-zA-Z]    { return ID; }
+"+"         { return '+'; }
+"*"         { return '*'; }
+"("         { return '('; }
+")"         { return ')'; }
+[ \t\n]     ;
+.           { return yytext[0]; }
+
 %%
 
-int yywrap() {
+int yywrap()
+{
     return 1;
 }
+
