@@ -1,0 +1,46 @@
+2.Develop a lexical analyzer to recognize a few patterns in C (ex. Identifiers, constants, comments,
+operators etc.)
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+int main()
+{
+    char token[20];
+    int len;
+
+    printf("Enter statement: ");
+
+    while(scanf("%s", token) != EOF)
+    {
+        len = strlen(token);
+
+        if(token[len-1] == ';')
+        {
+            token[len-1] = '\0';   // Remove ';'
+        }
+
+        if(strcmp(token,"int")==0 || strcmp(token,"float")==0 ||
+           strcmp(token,"char")==0 || strcmp(token,"double")==0)
+            printf("%s - Keyword\n", token);
+
+        else if(isalpha(token[0]))
+            printf("%s - Identifier\n", token);
+
+        else if(isdigit(token[0]))
+            printf("%s - Constant\n", token);
+
+        else if(strcmp(token,"+")==0 || strcmp(token,"-")==0 ||
+                strcmp(token,"*")==0 || strcmp(token,"/")==0 ||
+                strcmp(token,"=")==0)
+            printf("%s - Operator\n", token);
+
+        if(len > 0 && token[len-1] == '\0')
+        {
+            printf("; - Special Symbol\n");
+            break;
+        }
+    }
+
+    return 0;
+}
