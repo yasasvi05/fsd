@@ -1,0 +1,66 @@
+9.Implement type checking to evaluate a simple expression.
+typecheck.y
+
+
+%{
+#include <stdio.h>
+#include <string.h>
+
+int yylex();
+void yyerror(const char *s);
+%}
+
+%token INT FLOAT
+
+%%
+
+expr : INT '+' INT
+       {
+           printf("Type: int\n");
+       }
+     | FLOAT '+' FLOAT
+       {
+           printf("Type: float\n");
+       }
+     | INT '+' FLOAT
+       {
+           printf("Type Error: Cannot add int and float\n");
+       }
+     | FLOAT '+' INT
+       {
+           printf("Type Error: Cannot add float and int\n");
+       }
+     ;
+
+%%
+
+void yyerror(const char *s)
+{
+    printf("Invalid Expression\n");
+}
+
+int main()
+{
+    printf("Enter expression type: ");
+    yyparse();
+    return 0;
+}
+
+
+typecheck.l
+
+
+%{
+#include "y.tab.h"
+%}
+
+%%
+
+int       { return INT; }
+float     { return FLOAT; }
+[+]       { return '+'; }
+[ \t]     ;
+\n        return 0;
+.         return yytext[0];
+
+%%
